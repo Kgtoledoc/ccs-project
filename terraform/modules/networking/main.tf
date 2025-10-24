@@ -231,17 +231,18 @@ resource "aws_db_subnet_group" "main" {
 # ========================================
 # ELASTICACHE SUBNET GROUP
 # ========================================
-resource "aws_elasticache_subnet_group" "main" {
-  name       = "${local.name_prefix}-elasticache-subnet-group"
-  subnet_ids = aws_subnet.database[*].id
+# NOTE: ElastiCache subnet group moved to storage module to avoid duplication
+# resource "aws_elasticache_subnet_group" "main" {
+#   name       = "${local.name_prefix}-elasticache-subnet-group"
+#   subnet_ids = aws_subnet.database[*].id
 
-  tags = merge(
-    var.tags,
-    {
-      Name = "${local.name_prefix}-elasticache-subnet-group"
-    }
-  )
-}
+#   tags = merge(
+#     var.tags,
+#     {
+#       Name = "${local.name_prefix}-elasticache-subnet-group"
+#     }
+#   )
+# }
 
 # ========================================
 # SECURITY GROUPS

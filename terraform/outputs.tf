@@ -169,26 +169,26 @@ output "waf_web_acl_id" {
 }
 
 # Workflows Outputs
-output "emergency_workflow_arn" {
-  description = "Emergency Step Function workflow ARN"
-  value       = module.workflows.emergency_workflow_arn
-}
-
-output "business_workflow_arn" {
-  description = "Business Step Function workflow ARN"
-  value       = module.workflows.business_workflow_arn
-}
-
+# output "emergency_workflow_arn" {
+#   description = "Emergency Step Function workflow ARN"
+#   value       = module.workflows.emergency_workflow_arn
+# }
+# 
+# output "business_workflow_arn" {
+#   description = "Business Step Function workflow ARN"
+#   value       = module.workflows.business_workflow_arn
+# }
+# 
 # Monitoring Outputs
 output "cloudwatch_log_group_names" {
   description = "CloudWatch Log Group names"
   value       = module.monitoring.log_group_names
 }
 
-output "cloudwatch_dashboard_url" {
-  description = "CloudWatch Dashboard URL"
-  value       = "https://console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${module.monitoring.dashboard_name}"
-}
+# output "cloudwatch_dashboard_url" {
+#   description = "CloudWatch Dashboard URL"
+#   value       = "https://console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${module.monitoring.dashboard_name}"
+# }
 
 # Frontend Outputs
 output "website_url" {

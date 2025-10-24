@@ -12,7 +12,7 @@ terraform {
 
 locals {
   name_prefix = "${var.project_name}-${var.environment}"
-  s3_origin_id = "S3-${local.name_prefix}-website"
+  s3_origin_id = "S3-ccs-dev-website"
 }
 
 # ========================================
@@ -129,7 +129,7 @@ resource "aws_cloudfront_distribution" "website" {
     for_each = var.api_gateway_domain != "" ? [1] : []
     
     content {
-      domain_name = var.api_gateway_domain
+      domain_name = replace(replace(var.api_gateway_domain, "https://", ""), "/dev", "")
       origin_id   = "API-Gateway"
 
       custom_origin_config {
@@ -232,19 +232,19 @@ resource "aws_cloudfront_distribution" "website" {
     minimum_protocol_version       = "TLSv1.2_2021"
   }
 
-  # Logging
-  dynamic "logging_config" {
-    for_each = var.enable_logging ? [1] : []
-    
-    content {
-      include_cookies = false
-      bucket          = var.logs_bucket_domain_name
-      prefix          = "cloudfront/"
-    }
-  }
+  # Logging - Commented out due to S3 ACL requirements
+  # dynamic "logging_config" {
+  #   for_each = var.enable_logging ? [1] : []
+  #   
+  #   content {
+  #     include_cookies = false
+  #     bucket          = var.logs_bucket_domain_name
+  #     prefix          = "cloudfront/"
+  #   }
+  # }
 
-  # WAF Association
-  web_acl_id = var.waf_web_acl_id
+  # WAF Association - Commented out due to access issues
+  # web_acl_id = var.waf_web_acl_id
 
   tags = merge(
     var.tags,

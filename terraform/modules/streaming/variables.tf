@@ -42,6 +42,12 @@ variable "firehose_role_arn" {
   default     = ""
 }
 
+variable "firehose_role_name" {
+  description = "IAM role name for Firehose"
+  type        = string
+  default     = ""
+}
+
 variable "eventbridge_role_arn" {
   description = "IAM role ARN for EventBridge"
   type        = string

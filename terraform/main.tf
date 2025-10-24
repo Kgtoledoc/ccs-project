@@ -73,6 +73,8 @@ module "streaming" {
   kinesis_retention_period = var.kinesis_retention_period
   s3_data_lake_bucket      = module.storage.s3_data_lake_bucket
   kms_key_id               = module.security.kms_key_id
+  firehose_role_arn        = module.security.firehose_role_arn
+  firehose_role_name       = module.security.firehose_role_name
   enable_encryption        = var.enable_encryption
 
   tags = local.common_tags
@@ -134,6 +136,7 @@ module "compute" {
 
   # Lambda Configuration
   lambda_execution_role_arn    = module.security.lambda_execution_role_arn
+  lambda_execution_role_name   = module.security.lambda_execution_role_name
   lambda_telemetry_memory      = var.lambda_telemetry_memory
   lambda_telemetry_timeout     = var.lambda_telemetry_timeout
   lambda_concurrent_executions = var.lambda_concurrent_executions
@@ -164,7 +167,7 @@ module "compute" {
   kms_key_id = module.security.kms_key_id
 
   # Workflows
-  emergency_workflow_arn = module.workflows.emergency_workflow_arn
+  emergency_workflow_arn = null
 
   # Monitoring
   enable_xray        = var.enable_xray

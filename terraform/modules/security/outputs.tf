@@ -85,6 +85,11 @@ output "lambda_execution_role_arn" {
   value       = aws_iam_role.lambda_execution.arn
 }
 
+output "lambda_execution_role_name" {
+  description = "Lambda Execution Role Name"
+  value       = aws_iam_role.lambda_execution.name
+}
+
 output "iot_core_role_arn" {
   description = "IoT Core Role ARN"
   value       = aws_iam_role.iot_core.arn
@@ -108,6 +113,11 @@ output "appsync_role_arn" {
 output "firehose_role_arn" {
   description = "Firehose Role ARN"
   value       = aws_iam_role.firehose.arn
+}
+
+output "firehose_role_name" {
+  description = "Firehose Role Name"
+  value       = aws_iam_role.firehose.name
 }
 
 output "cognito_authenticated_role_arn" {

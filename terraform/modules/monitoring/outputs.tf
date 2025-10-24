@@ -1,12 +1,12 @@
-output "dashboard_name" {
-  description = "CloudWatch Dashboard name"
-  value       = aws_cloudwatch_dashboard.main.dashboard_name
-}
-
-output "dashboard_arn" {
-  description = "CloudWatch Dashboard ARN"
-  value       = aws_cloudwatch_dashboard.main.dashboard_arn
-}
+# output "dashboard_name" {
+#   description = "CloudWatch Dashboard name"
+#   value       = aws_cloudwatch_dashboard.main.dashboard_name
+# }
+# 
+# output "dashboard_arn" {
+#   description = "CloudWatch Dashboard ARN"
+#   value       = aws_cloudwatch_dashboard.main.dashboard_arn
+# }
 
 output "log_group_names" {
   description = "CloudWatch Log Group names"
@@ -23,18 +23,17 @@ output "xray_sampling_rule_arn" {
   value       = var.enable_xray ? aws_xray_sampling_rule.main[0].arn : null
 }
 
-output "alarm_arns" {
-  description = "List of CloudWatch Alarm ARNs"
-  value = [
-    aws_cloudwatch_metric_alarm.emergency_latency_high.arn,
-    aws_cloudwatch_metric_alarm.kinesis_iterator_age_high.arn,
-    aws_cloudwatch_metric_alarm.dynamodb_user_errors.arn,
-    aws_cloudwatch_metric_alarm.alb_unhealthy_hosts.arn,
-    aws_cloudwatch_metric_alarm.alb_5xx_errors.arn,
-    aws_cloudwatch_metric_alarm.aurora_cpu_high.arn,
-    aws_cloudwatch_metric_alarm.elasticache_cpu_high.arn,
-    aws_cloudwatch_metric_alarm.elasticache_low_hit_rate.arn,
-    aws_cloudwatch_metric_alarm.high_error_rate.arn
-  ]
-}
-
+# output "alarm_arns" {
+#   description = "List of CloudWatch Alarm ARNs"
+#   value = [
+#     aws_cloudwatch_metric_alarm.emergency_latency_high.arn,
+#     aws_cloudwatch_metric_alarm.kinesis_iterator_age_high.arn,
+#     aws_cloudwatch_metric_alarm.dynamodb_user_errors.arn,
+#     aws_cloudwatch_metric_alarm.alb_unhealthy_hosts.arn,
+#     aws_cloudwatch_metric_alarm.alb_5xx_errors.arn,
+#     aws_cloudwatch_metric_alarm.aurora_cpu_high.arn,
+#     aws_cloudwatch_metric_alarm.elasticache_cpu_high.arn,
+#     aws_cloudwatch_metric_alarm.elasticache_low_hit_rate.arn,
+#     aws_cloudwatch_metric_alarm.high_error_rate.arn
+#   ]
+# }

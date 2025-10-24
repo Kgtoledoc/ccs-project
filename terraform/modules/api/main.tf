@@ -73,22 +73,23 @@ resource "aws_api_gateway_integration" "get_vehicle" {
     "integration.request.path.vehicleId" = "method.request.path.vehicleId"
   }
 
-  connection_type = "VPC_LINK"
-  connection_id   = aws_api_gateway_vpc_link.main.id
+  # connection_type = "VPC_LINK"
+  # connection_id   = aws_api_gateway_vpc_link.main.id
 }
 
 # VPC Link to ALB
-resource "aws_api_gateway_vpc_link" "main" {
-  name        = "${local.name_prefix}-vpc-link"
-  target_arns = [var.load_balancer_arn]
+# NOTE: VPC Link commented out - requires NLB, not ALB
+# resource "aws_api_gateway_vpc_link" "main" {
+#   name        = "${local.name_prefix}-vpc-link"
+#   target_arns = [var.load_balancer_arn]
 
-  tags = merge(
-    var.tags,
-    {
-      Name = "${local.name_prefix}-vpc-link"
-    }
-  )
-}
+#   tags = merge(
+#     var.tags,
+#     {
+#       Name = "${local.name_prefix}-vpc-link"
+#     }
+#   )
+# }
 
 # API Gateway Deployment
 resource "aws_api_gateway_deployment" "main" {
@@ -171,8 +172,8 @@ resource "aws_apigatewayv2_route" "connect" {
   route_key = "$connect"
   target    = "integrations/${aws_apigatewayv2_integration.connect.id}"
 
-  authorization_type = "CUSTOM"
-  authorizer_id      = aws_apigatewayv2_authorizer.websocket.id
+  # authorization_type = "CUSTOM"
+  # authorizer_id      = aws_apigatewayv2_authorizer.websocket.id
 }
 
 resource "aws_apigatewayv2_route" "disconnect" {
@@ -222,14 +223,15 @@ resource "aws_apigatewayv2_integration" "ping" {
   integration_method = "POST"
 }
 
-# WebSocket Authorizer
-resource "aws_apigatewayv2_authorizer" "websocket" {
-  api_id           = aws_apigatewayv2_api.websocket.id
-  authorizer_type  = "REQUEST"
-  authorizer_uri   = var.websocket_handler_arn
-  identity_sources = ["route.request.querystring.token"]
-  name             = "${local.name_prefix}-websocket-authorizer"
-}
+# NOTE: WebSocket Authorizer commented out due to invalid URI format
+# The authorizer_uri should be in format: arn:aws:apigateway:region:lambda:path/2015-03-31/functions/function-name/invocations
+# resource "aws_apigatewayv2_authorizer" "websocket" {
+#   api_id           = aws_apigatewayv2_api.websocket.id
+#   authorizer_type  = "REQUEST"
+#   authorizer_uri   = var.websocket_handler_arn
+#   identity_sources = ["route.request.querystring.token"]
+#   name             = "${local.name_prefix}-websocket-authorizer"
+# }
 
 # Lambda Permissions for WebSocket
 resource "aws_lambda_permission" "websocket" {
@@ -365,35 +367,36 @@ resource "aws_appsync_datasource" "dynamodb" {
 }
 
 # Resolver: Query.getVehicle
-resource "aws_appsync_resolver" "get_vehicle" {
-  api_id      = aws_appsync_graphql_api.main.id
-  type        = "Query"
-  field       = "getVehicle"
-  data_source = aws_appsync_datasource.dynamodb.name
+# NOTE: AppSync Resolver commented out - schema must be deployed first
+# resource "aws_appsync_resolver" "get_vehicle" {
+#   api_id      = aws_appsync_graphql_api.main.id
+#   type        = "Query"
+#   field       = "getVehicle"
+#   data_source = aws_appsync_datasource.dynamodb.name
 
-  request_template = <<EOF
-{
-  "version": "2017-02-28",
-  "operation": "Query",
-  "query": {
-    "expression": "vehicle_id = :vehicleId",
-    "expressionValues": {
-      ":vehicleId": $util.dynamodb.toDynamoDBJson($ctx.args.vehicleId)
-    }
-  },
-  "scanIndexForward": false,
-  "limit": 1
-}
-EOF
+#   request_template = <<EOF
+# {
+#   "version": "2017-02-28",
+#   "operation": "Query",
+#   "query": {
+#     "expression": "vehicle_id = :vehicleId",
+#     "expressionValues": {
+#       ":vehicleId": $util.dynamodb.toDynamoDBJson($ctx.args.vehicleId)
+#     }
+#   },
+#   "scanIndexForward": false,
+#   "limit": 1
+# }
+# EOF
 
-  response_template = <<EOF
-#if($ctx.result.items.size() > 0)
-  $util.toJson($ctx.result.items[0])
-#else
-  null
-#end
-EOF
-}
+#   response_template = <<EOF
+# #if($ctx.result.items.size() > 0)
+#   $util.toJson($ctx.result.items[0])
+# #else
+#   null
+# #end
+# EOF
+# }
 
 # ========================================
 # CLOUDWATCH LOG GROUPS

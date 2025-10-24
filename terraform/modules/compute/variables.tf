@@ -44,6 +44,11 @@ variable "lambda_execution_role_arn" {
   type        = string
 }
 
+variable "lambda_execution_role_name" {
+  description = "IAM role name for Lambda execution"
+  type        = string
+}
+
 variable "lambda_telemetry_memory" {
   description = "Memory allocation for telemetry processor Lambda"
   type        = number
@@ -160,6 +165,7 @@ variable "s3_logs_bucket" {
 variable "emergency_workflow_arn" {
   description = "Emergency workflow Step Function ARN"
   type        = string
+  default     = null
 }
 
 # API

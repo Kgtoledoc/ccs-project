@@ -234,7 +234,7 @@ resource "aws_db_instance" "main" {
 
 resource "random_password" "db_password" {
   length  = 32
-  special = true
+  special = false  # Evita caracteres inválidos para RDS: /, @, ", espacio
 }
 
 # RDS Monitoring Role

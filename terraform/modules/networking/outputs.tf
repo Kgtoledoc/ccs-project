@@ -28,10 +28,10 @@ output "db_subnet_group_name" {
   value       = aws_db_subnet_group.main.name
 }
 
-output "elasticache_subnet_group_name" {
-  description = "ElastiCache subnet group name"
-  value       = aws_elasticache_subnet_group.main.name
-}
+# output "elasticache_subnet_group_name" {
+#   description = "ElastiCache subnet group name"
+#   value       = aws_elasticache_subnet_group.main.name
+# }
 
 output "alb_security_group_id" {
   description = "ALB security group ID"

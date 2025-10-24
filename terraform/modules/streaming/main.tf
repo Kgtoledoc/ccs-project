@@ -40,83 +40,154 @@ resource "aws_kinesis_stream" "telemetry" {
 # ========================================
 # KINESIS FIREHOSE - DATA LAKE
 # ========================================
-resource "aws_kinesis_firehose_delivery_stream" "data_lake" {
-  name        = "${local.name_prefix}-data-lake-firehose"
-  destination = "extended_s3"
 
-  kinesis_source_configuration {
-    kinesis_stream_arn = aws_kinesis_stream.telemetry.arn
-    role_arn           = var.firehose_role_arn
-  }
+# NOTE: Firehose role already exists in security module
+# resource "aws_iam_role" "firehose" {
+#   name = "${local.name_prefix}-firehose-role"
 
-  extended_s3_configuration {
-    role_arn           = var.firehose_role_arn
-    bucket_arn         = "arn:aws:s3:::${var.s3_data_lake_bucket}"
-    prefix             = "telemetry/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
-    error_output_prefix = "errors/!{firehose:error-output-type}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
-    
-    buffering_size     = 128
-    buffering_interval = 300
-    compression_format = "GZIP"
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action = "sts:AssumeRole"
+#         Effect = "Allow"
+#         Principal = {
+#           Service = "firehose.amazonaws.com"
+#         }
+#       }
+#     ]
+#   })
 
-    data_format_conversion_configuration {
-      input_format_configuration {
-        deserializer {
-          open_x_json_ser_de {}
-        }
+#   tags = merge(
+#     var.tags,
+#     {
+#       Name = "${local.name_prefix}-firehose-role"
+#     }
+#   )
+# }
+
+# IAM Policy for Firehose
+resource "aws_iam_role_policy" "firehose" {
+  name = "${local.name_prefix}-firehose-policy"
+  role = var.firehose_role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "kinesis:DescribeStream",
+          "kinesis:GetShardIterator",
+          "kinesis:GetRecords",
+          "kinesis:ListShards"
+        ]
+        Resource = aws_kinesis_stream.telemetry.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:AbortMultipartUpload",
+          "s3:GetBucketLocation",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:ListBucketMultipartUploads",
+          "s3:PutObject"
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.s3_data_lake_bucket}",
+          "arn:aws:s3:::${var.s3_data_lake_bucket}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "glue:GetTableVersions"
+        ]
+        Resource = "*"
       }
-
-      output_format_configuration {
-        serializer {
-          parquet_ser_de {}
-        }
-      }
-
-      schema_configuration {
-        database_name = "${local.name_prefix}_telemetry_db"
-        table_name    = "telemetry"
-        role_arn      = var.firehose_role_arn
-      }
-    }
-
-    cloudwatch_logging_options {
-      enabled         = true
-      log_group_name  = "/aws/kinesisfirehose/${local.name_prefix}-data-lake"
-      log_stream_name = "S3Delivery"
-    }
-
-    s3_backup_mode = "Disabled"
-  }
-
-  tags = merge(
-    var.tags,
-    {
-      Name = "${local.name_prefix}-data-lake-firehose"
-    }
-  )
+    ]
+  })
 }
 
-# ========================================
-# SQS - EMERGENCY QUEUE (FIFO)
-# ========================================
-resource "aws_sqs_queue" "emergency_dlq" {
-  name                       = "${local.name_prefix}-emergency-dlq.fifo"
-  fifo_queue                 = true
-  content_based_deduplication = true
-  message_retention_seconds  = 1209600 # 14 days
-  visibility_timeout_seconds = 30
+# NOTE: Kinesis Firehose commented out - requires Glue database/table setup
+# resource "aws_kinesis_firehose_delivery_stream" "data_lake" {
+#   name        = "${local.name_prefix}-data-lake-firehose"
+#   destination = "extended_s3"
+# 
+#   kinesis_source_configuration {
+#     kinesis_stream_arn = aws_kinesis_stream.telemetry.arn
+#     role_arn           = var.firehose_role_arn
+#   }
+# 
+#     extended_s3_configuration {
+#       role_arn           = var.firehose_role_arn
+#       bucket_arn         = "arn:aws:s3:::${var.s3_data_lake_bucket}"
+#       prefix             = "telemetry/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
+#       error_output_prefix = "errors/!{firehose:error-output-type}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
+#       
+#       buffering_size     = 128
+#       buffering_interval = 300
+#       compression_format = "UNCOMPRESSED"  # Required when data format conversion is enabled
+# 
+#     data_format_conversion_configuration {
+#       input_format_configuration {
+#         deserializer {
+#           open_x_json_ser_de {}
+#         }
+#       }
+# 
+#       output_format_configuration {
+#         serializer {
+#           parquet_ser_de {}
+#         }
+#       }
+# 
+#       schema_configuration {
+#         database_name = "${local.name_prefix}_telemetry_db"
+#         table_name    = "telemetry"
+#         role_arn      = var.firehose_role_arn
+#       }
+#     }
+# 
+#     cloudwatch_logging_options {
+#       enabled         = true
+#       log_group_name  = "/aws/kinesisfirehose/${local.name_prefix}-data-lake"
+#       log_stream_name = "S3Delivery"
+#     }
+# 
+#     s3_backup_mode = "Disabled"
+#   }
+# 
+#   tags = merge(
+#     var.tags,
+#     {
+#       Name = "${local.name_prefix}-data-lake-firehose"
+#     }
+#   )
+# }
+# 
+# # ========================================
+# # SQS - EMERGENCY QUEUE (FIFO)
+# # ========================================
+# resource "aws_sqs_queue" "emergency_dlq" {
+#   name                       = "${local.name_prefix}-emergency-dlq.fifo"
+#   fifo_queue                 = true
+#   content_based_deduplication = true
+#   message_retention_seconds  = 1209600 # 14 days
+#   visibility_timeout_seconds = 30
+# 
+#   kms_master_key_id                 = var.kms_key_id
+#   kms_data_key_reuse_period_seconds = 300
 
-  kms_master_key_id                 = var.kms_key_id
-  kms_data_key_reuse_period_seconds = 300
-
-  tags = merge(
-    var.tags,
-    {
-      Name = "${local.name_prefix}-emergency-dlq"
-      Type = "DeadLetterQueue"
-    }
-  )
-}
+#   tags = merge(
+#     var.tags,
+#     {
+#       Name = "${local.name_prefix}-emergency-dlq"
+#       Type = "DeadLetterQueue"
+#     }
+#   )
+# }
 
 resource "aws_sqs_queue" "emergency" {
   name                       = "${local.name_prefix}-emergency-queue.fifo"
@@ -136,10 +207,10 @@ resource "aws_sqs_queue" "emergency" {
   kms_master_key_id                 = var.kms_key_id
   kms_data_key_reuse_period_seconds = 300
 
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.emergency_dlq.arn
-    maxReceiveCount     = 3
-  })
+  # redrive_policy = jsonencode({
+  #   deadLetterTargetArn = aws_sqs_queue.emergency_dlq.arn
+  #   maxReceiveCount     = 3
+  # })
 
   tags = merge(
     var.tags,
@@ -406,33 +477,35 @@ resource "aws_cloudwatch_log_group" "firehose" {
 # KINESIS APPLICATION AUTO SCALING
 # ========================================
 
-# Auto Scaling Target
-resource "aws_appautoscaling_target" "kinesis" {
-  max_capacity       = 50
-  min_capacity       = var.kinesis_shard_count
-  resource_id        = "stream/${aws_kinesis_stream.telemetry.name}"
-  scalable_dimension = "kinesis:stream:ReadCapacityUnits"
-  service_namespace  = "kinesis"
-}
+# NOTE: Kinesis Auto Scaling commented out - not supported by AWS
+# Kinesis streams don't support auto scaling for read capacity units
+# Use manual shard scaling or Kinesis Data Streams On-Demand mode instead
 
-# Scale Up Policy
-resource "aws_appautoscaling_policy" "kinesis_scale_up" {
-  name               = "${local.name_prefix}-kinesis-scale-up"
-  policy_type        = "TargetTrackingScaling"
-  resource_id        = aws_appautoscaling_target.kinesis.resource_id
-  scalable_dimension = aws_appautoscaling_target.kinesis.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.kinesis.service_namespace
+# resource "aws_appautoscaling_target" "kinesis" {
+#   max_capacity       = 50
+#   min_capacity       = var.kinesis_shard_count
+#   resource_id        = "stream/${aws_kinesis_stream.telemetry.name}"
+#   scalable_dimension = "kinesis:stream:ReadCapacityUnits"
+#   service_namespace  = "kinesis"
+# }
 
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "KinesisStreamIncomingRecords"
-    }
+# resource "aws_appautoscaling_policy" "kinesis_scale_up" {
+#   name               = "${local.name_prefix}-kinesis-scale-up"
+#   policy_type        = "TargetTrackingScaling"
+#   resource_id        = aws_appautoscaling_target.kinesis.resource_id
+#   scalable_dimension = aws_appautoscaling_target.kinesis.scalable_dimension
+#   service_namespace  = aws_appautoscaling_target.kinesis.service_namespace
 
-    target_value       = 1000.0
-    scale_in_cooldown  = 300
-    scale_out_cooldown = 60
-  }
-}
+#   target_tracking_scaling_policy_configuration {
+#     predefined_metric_specification {
+#       predefined_metric_type = "KinesisStreamIncomingRecords"
+#     }
+
+#     target_value       = 1000.0
+#     scale_in_cooldown  = 300
+#     scale_out_cooldown = 60
+#   }
+# }
 
 # ========================================
 # EVENTBRIDGE RULES (Optional)
@@ -459,11 +532,56 @@ resource "aws_cloudwatch_event_rule" "high_priority_telemetry" {
   )
 }
 
+# IAM Role for EventBridge
+resource "aws_iam_role" "eventbridge" {
+  name = "${local.name_prefix}-eventbridge-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "events.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${local.name_prefix}-eventbridge-role"
+    }
+  )
+}
+
+# IAM Policy for EventBridge to write to Kinesis
+resource "aws_iam_role_policy" "eventbridge" {
+  name = "${local.name_prefix}-eventbridge-policy"
+  role = aws_iam_role.eventbridge.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "kinesis:PutRecord",
+          "kinesis:PutRecords"
+        ]
+        Resource = aws_kinesis_stream.telemetry.arn
+      }
+    ]
+  })
+}
+
 resource "aws_cloudwatch_event_target" "high_priority_to_kinesis" {
   rule      = aws_cloudwatch_event_rule.high_priority_telemetry.name
   target_id = "SendToKinesis"
   arn       = aws_kinesis_stream.telemetry.arn
 
-  role_arn = var.eventbridge_role_arn
+  role_arn = aws_iam_role.eventbridge.arn
 }
 

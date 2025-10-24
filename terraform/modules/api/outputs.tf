@@ -48,8 +48,8 @@ output "appsync_api_arn" {
   value       = aws_appsync_graphql_api.main.arn
 }
 
-output "vpc_link_id" {
-  description = "VPC Link ID"
-  value       = aws_api_gateway_vpc_link.main.id
-}
+# output "vpc_link_id" {
+#   description = "VPC Link ID"
+#   value       = aws_api_gateway_vpc_link.main.id
+# }
 

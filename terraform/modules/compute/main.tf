@@ -83,6 +83,39 @@ resource "aws_lambda_event_source_mapping" "kinesis_telemetry" {
   enabled = true
 }
 
+# IAM Policy for Lambda to read from Kinesis and SQS
+resource "aws_iam_role_policy" "lambda_kinesis" {
+  name = "${local.name_prefix}-lambda-kinesis-policy"
+  role = var.lambda_execution_role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "kinesis:GetRecords",
+          "kinesis:GetShardIterator",
+          "kinesis:DescribeStream",
+          "kinesis:DescribeStreamSummary",
+          "kinesis:ListShards",
+          "kinesis:ListStreams"
+        ]
+        Resource = var.kinesis_stream_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = var.emergency_queue_arn
+      }
+    ]
+  })
+}
+
 # Emergency Orchestrator
 resource "aws_lambda_function" "emergency_orchestrator" {
   filename         = data.archive_file.emergency_orchestrator.output_path
@@ -96,7 +129,7 @@ resource "aws_lambda_function" "emergency_orchestrator" {
 
   environment {
     variables = {
-      EMERGENCY_WORKFLOW_ARN = var.emergency_workflow_arn
+      # EMERGENCY_WORKFLOW_ARN = var.emergency_workflow_arn
       ENVIRONMENT            = var.environment
     }
   }
@@ -255,7 +288,7 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 # APPLICATION LOAD BALANCER
 # ========================================
 resource "aws_lb" "main" {
-  name               = "${local.name_prefix}-alb"
+  name               = "${local.name_prefix}-alb-v2"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
@@ -265,16 +298,16 @@ resource "aws_lb" "main" {
   enable_http2              = true
   enable_cross_zone_load_balancing = true
 
-  access_logs {
-    bucket  = var.s3_logs_bucket
-    prefix  = "alb"
-    enabled = true
-  }
+  # access_logs {
+  #   bucket  = var.s3_logs_bucket
+  #   prefix  = "alb"
+  #   enabled = true
+  # }
 
   tags = merge(
     var.tags,
     {
-      Name = "${local.name_prefix}-alb"
+      Name = "${local.name_prefix}-alb-v2"
     }
   )
 }

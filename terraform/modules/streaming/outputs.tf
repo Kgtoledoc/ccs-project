@@ -18,10 +18,10 @@ output "emergency_queue_url" {
   value       = aws_sqs_queue.emergency.url
 }
 
-output "emergency_dlq_arn" {
-  description = "Emergency Dead Letter Queue ARN"
-  value       = aws_sqs_queue.emergency_dlq.arn
-}
+# output "emergency_dlq_arn" {
+#   description = "Emergency Dead Letter Queue ARN"
+#   value       = aws_sqs_queue.emergency_dlq.arn
+# }
 
 output "telemetry_queue_arn" {
   description = "Telemetry SQS Queue ARN"
@@ -38,15 +38,15 @@ output "telemetry_dlq_arn" {
   value       = aws_sqs_queue.telemetry_dlq.arn
 }
 
-output "firehose_delivery_stream_arn" {
-  description = "Kinesis Firehose delivery stream ARN"
-  value       = aws_kinesis_firehose_delivery_stream.data_lake.arn
-}
+# output "firehose_delivery_stream_arn" {
+#   description = "Kinesis Firehose delivery stream ARN"
+#   value       = aws_kinesis_firehose_delivery_stream.data_lake.arn
+# }
 
-output "firehose_delivery_stream_name" {
-  description = "Kinesis Firehose delivery stream name"
-  value       = aws_kinesis_firehose_delivery_stream.data_lake.name
-}
+# output "firehose_delivery_stream_name" {
+#   description = "Kinesis Firehose delivery stream name"
+#   value       = aws_kinesis_firehose_delivery_stream.data_lake.name
+# }
 
 output "sns_authorities_topic_arn" {
   description = "SNS Authorities alerts topic ARN"
