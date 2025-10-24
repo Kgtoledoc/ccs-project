@@ -51,12 +51,7 @@ variable "geo_restriction_locations" {
   default     = []
 }
 
-# Features
-variable "enable_spa_routing" {
-  description = "Enable Lambda@Edge for SPA routing"
-  type        = bool
-  default     = true
-}
+# Features - Lambda@Edge removed from architecture
 
 variable "enable_auto_invalidation" {
   description = "Enable automatic CloudFront cache invalidation on S3 upload"

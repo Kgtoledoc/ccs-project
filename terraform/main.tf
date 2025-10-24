@@ -279,10 +279,6 @@ module "monitoring" {
 module "frontend" {
   source = "./modules/frontend"
 
-  providers = {
-    aws.us-east-1 = aws.us-east-1
-  }
-
   project_name = var.project_name
   environment  = var.environment
 
@@ -294,8 +290,7 @@ module "frontend" {
   # API Integration
   api_gateway_domain = module.api.api_gateway_rest_url
 
-  # Features
-  enable_spa_routing       = true
+  # Features - Lambda@Edge removed
   enable_auto_invalidation = var.enable_cloudfront_auto_invalidation
   enable_logging           = true
 

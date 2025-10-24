@@ -5,7 +5,6 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
-      configuration_aliases = [aws.us-east-1]
     }
   }
 }
@@ -162,16 +161,7 @@ resource "aws_cloudfront_distribution" "website" {
     max_ttl                = 86400   # 24 hours
     compress               = true
 
-    # Lambda@Edge for SPA routing (optional)
-    dynamic "lambda_function_association" {
-      for_each = var.enable_spa_routing ? [1] : []
-      
-      content {
-        event_type   = "origin-response"
-        lambda_arn   = aws_lambda_function.edge_spa_router[0].qualified_arn
-        include_body = false
-      }
-    }
+    # No Lambda@Edge - using custom error responses for SPA routing
   }
 
   # Cache Behavior for API requests (if API Gateway origin exists)
@@ -255,84 +245,9 @@ resource "aws_cloudfront_distribution" "website" {
 }
 
 # ========================================
-# LAMBDA@EDGE FOR SPA ROUTING (Optional)
+# LAMBDA@EDGE REMOVED - Not in original architecture
 # ========================================
-resource "aws_lambda_function" "edge_spa_router" {
-  count = var.enable_spa_routing ? 1 : 0
-
-  provider      = aws.us-east-1  # Lambda@Edge must be in us-east-1
-  filename      = data.archive_file.edge_spa_router[0].output_path
-  function_name = "${local.name_prefix}-edge-spa-router"
-  role          = aws_iam_role.edge_lambda[0].arn
-  handler       = "index.handler"
-  runtime       = "nodejs18.x"
-  timeout       = 5
-  memory_size   = 128
-  publish       = true  # Required for Lambda@Edge
-
-  source_code_hash = data.archive_file.edge_spa_router[0].output_base64sha256
-
-  tags = var.tags
-}
-
-data "archive_file" "edge_spa_router" {
-  count = var.enable_spa_routing ? 1 : 0
-
-  type        = "zip"
-  output_path = "${path.module}/.terraform/edge_spa_router.zip"
-
-  source {
-    content  = <<-EOT
-      exports.handler = async (event) => {
-        const response = event.Records[0].cf.response;
-        const request = event.Records[0].cf.request;
-        
-        // If 404 or 403, serve index.html
-        if (response.status === '404' || response.status === '403') {
-          response.status = '200';
-          response.statusDescription = 'OK';
-          response.body = '';
-          response.headers['content-type'] = [{ key: 'Content-Type', value: 'text/html' }];
-        }
-        
-        return response;
-      };
-    EOT
-    filename = "index.js"
-  }
-}
-
-# IAM Role for Lambda@Edge
-resource "aws_iam_role" "edge_lambda" {
-  count = var.enable_spa_routing ? 1 : 0
-
-  name = "${local.name_prefix}-edge-lambda-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = [
-            "lambda.amazonaws.com",
-            "edgelambda.amazonaws.com"
-          ]
-        }
-      }
-    ]
-  })
-
-  tags = var.tags
-}
-
-resource "aws_iam_role_policy_attachment" "edge_lambda_basic" {
-  count = var.enable_spa_routing ? 1 : 0
-
-  role       = aws_iam_role.edge_lambda[0].name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
+# Using CloudFront custom error responses for SPA routing instead
 
 # ========================================
 # CLOUDWATCH LOG GROUP
