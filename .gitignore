@@ -1,0 +1,240 @@
+# ========================================
+# TERRAFORM
+# ========================================
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files, which might contain sensitive data
+*.tfvars
+*.tfvars.json
+
+# Ignore override files as they are usually used to override resources locally
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore plan files
+*.tfplan
+*tfplan*
+
+# Ignore lock files (uncomment if you want to ignore it)
+# .terraform.lock.hcl
+
+# ========================================
+# IDE / EDITOR
+# ========================================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ========================================
+# OS
+# ========================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
+
+# ========================================
+# LOGS & TEMPORARY FILES
+# ========================================
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.cache
+
+# ========================================
+# BACKUPS
+# ========================================
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+*~
+
+# ========================================
+# AWS & SECRETS
+# ========================================
+
+# AWS credentials
+.aws/
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.envrc
+
+# Secrets
+secrets/
+*.secret
+credentials.json
+service-account*.json
+
+# ========================================
+# PYTHON (for scripts)
+# ========================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# ========================================
+# NODE.JS (for Lambda functions)
+# ========================================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+
+# ========================================
+# PROJECT SPECIFIC
+# ========================================
+
+# Lambda deployment packages
+*.zip
+lambda_functions/*.zip
+
+# Terraform module cache
+.terraform.d/
+
+# Scripts auxiliares temporales
+cleanup_enis.sh
+FIX_*.sh
+FIX_*.md
+terraform-deploy-core.sh
+comment_alarms.txt
+
+# Backups de módulos
+*.tf.backup
+
+# Documentos temporales de análisis
+ANALISIS_*.md
+SOLUCION_*.md
+RESUMEN_*.md
+
+# Certificados IoT de prueba (si se generan)
+certificates/
+*.pem.key
+
+# ========================================
+# DOCUMENTATION (opcional - descomentar si no quieres versionar)
+# ========================================
+
+# Si NO quieres versionar documentación temporal:
+# DOCUMENTO_*.md
+# PROYECTO_*.md
+# diagrama_*.eraser
+# INSTRUCCIONES_*.md
+
+# ========================================
+# TESTING
+# ========================================
+
+# Test outputs
+test-results/
+coverage/
+.pytest_cache/
+

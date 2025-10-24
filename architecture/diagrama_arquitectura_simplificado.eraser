@@ -1,0 +1,249 @@
+title: CCS AWS Architecture — Real-Time Vehicle Monitoring (Simplified)
+
+// ========================================
+// LAYER 1: EDGE — IoT Devices
+// ========================================
+Edge [icon: truck, color: green] {
+  Vehicle Fleet [icon: truck, label: "5,000+ Vehicles\n(GPS, Sensors, Cameras, Panic Button)"]
+}
+
+// ========================================
+// LAYER 2: INGESTION — IoT Core
+// ========================================
+Ingestion [icon: aws-iot-core, color: orange] {
+  IoT Core [icon: aws-iot-core, label: "AWS IoT Core\n(MQTT over TLS 1.2)\nRules Engine + Device Registry"]
+}
+
+// ========================================
+// LAYER 3: PROCESSING — 3 Lanes
+// ========================================
+Processing [icon: aws-kinesis, color: blue] {
+  
+  // Fast Lane
+  Emergency Lane [icon: zap, color: red, label: "🚨 FAST LANE\nEmergency (<2s SLA)"] {
+    SQS FIFO [icon: aws-sqs, label: "SQS FIFO Queue"]
+    Lambda Emergency [icon: aws-lambda, label: "Emergency Orchestrator"]
+    Step Functions Emerg [icon: aws-step-functions, label: "Emergency Workflow\n(Parallel Notifications)"]
+  }
+  
+  // Normal Lane
+  Telemetry Lane [icon: activity, color: blue, label: "📊 NORMAL LANE\nTelemetry (5K msg/s)"] {
+    Kinesis [icon: aws-kinesis, label: "Kinesis Streams\n(10-50 shards)"]
+    Lambda Processor [icon: aws-lambda, label: "Telemetry Processor\n+ Anomaly Detector"]
+  }
+  
+  // Analytics Lane
+  Analytics Lane [icon: trending-up, color: purple, label: "📈 ANALYTICS LANE\nData Lake & BI"] {
+    Firehose [icon: aws-kinesis-firehose, label: "Kinesis Firehose"]
+    S3 DataLake [icon: aws-s3, label: "S3 Data Lake\n(Parquet)"]
+    Analytics Tools [icon: aws-athena, label: "Glue + Athena + QuickSight"]
+  }
+}
+
+// ========================================
+// LAYER 4: REAL-TIME SYNC
+// ========================================
+RealTime [icon: layers, color: cyan] {
+  Stream Handler [icon: aws-lambda, label: "DynamoDB Stream Handler"]
+  Cache [icon: aws-elasticache, label: "ElastiCache Redis"]
+  GraphQL [icon: aws-appsync, label: "AppSync (GraphQL)"]
+  WebSocket [icon: aws-api-gateway, label: "WebSocket API"]
+}
+
+// ========================================
+// LAYER 5: APPLICATION — Microservices
+// ========================================
+Application [icon: server, color: teal] {
+  
+  // API Layer
+  API Layer [icon: aws-api-gateway, label: "API Gateway + Cognito + WAF"] {
+    API Gateway [icon: aws-api-gateway, label: "REST API"]
+    Auth [icon: aws-cognito, label: "Cognito Auth (JWT/MFA)"]
+  }
+  
+  // Load Balancer
+  ALB [icon: aws-elb, label: "Application Load Balancer"]
+  
+  // Microservices
+  Microservices [icon: aws-ecs, label: "ECS Fargate Cluster\n(Auto-Scaling 2-20 tasks)"] {
+    Sales [icon: shopping-cart, label: "Sales Service"]
+    Monitoring [icon: activity, label: "Monitoring Service"]
+    Statistics [icon: bar-chart, label: "Statistics Service"]
+    Payments [icon: credit-card, label: "Payments Service"]
+    Alerts [icon: bell, label: "Alerts Service"]
+  }
+  
+  // Business Workflows
+  Workflows [icon: aws-step-functions, label: "Step Functions\n(Sales & Approvals)"]
+}
+
+// ========================================
+// EXTERNAL APIs
+// ========================================
+External [icon: briefcase, color: orange] {
+  Stripe [icon: stripe, label: "Stripe API\n(Payment Gateway)"]
+  GovAPI [icon: id-card, label: "Truora\n(ID Validation)"]
+  Twilio [icon: twilio, label: "Twilio API\n(SMS Notifications)"]
+  SES [icon: aws-ses, label: "Amazon SES\n(Email)"]
+}
+
+// ========================================
+// LAYER 6: STORAGE
+// ========================================
+Storage [icon: database, color: gray] {
+  
+  // Primary Databases
+  Databases [label: "Primary Storage"] {
+    DynamoDB [icon: aws-dynamodb, label: "DynamoDB\n(Telemetry, Incidents, Alerts)"]
+    Aurora [icon: aws-aurora, label: "Aurora PostgreSQL\nServerless v2 (Multi-AZ)"]
+    Timestream [icon: aws-timestream, label: "Timestream\n(Time-Series Metrics)"]
+  }
+  
+  // Object Storage
+  ObjectStorage [icon: aws-s3, label: "S3 Buckets\n(Videos, Data Lake, Logs)"]
+  
+  // Cache
+  CacheLayer [icon: aws-elasticache, label: "ElastiCache Redis\n(Active Vehicles Cache)"]
+}
+
+// ========================================
+// LAYER 7: SECURITY & OBSERVABILITY
+// ========================================
+CrossCutting [icon: shield, color: yellow] {
+  Security [icon: key, label: "Security\n(KMS, Secrets Manager, IAM, WAF)"]
+  KMS [icon: aws-kms]
+  Secrets [icon: aws-secrets-manager]
+  Monitoring [icon: aws-cloudwatch, label: "Observability\n(CloudWatch, X-Ray, GuardDuty)"]
+}
+
+// ========================================
+// LAYER 8: FRONTEND & CLIENTS
+// ========================================
+Frontend [icon: globe, color: indigo] {
+  CloudFront [icon: aws-cloudfront, label: "CloudFront CDN\n(Global Distribution)"]
+  S3 Static [icon: aws-s3, label: "S3 Static Hosting\n(React SPA)"]
+}
+
+Clients [icon: monitor, color: purple] {
+  Web Users [icon: user, label: "Web Users\n(Browsers)"]
+  Mobile [icon: smartphone, label: "Mobile App\n(PWA)"]
+  Admin [icon: layout, label: "Admin Dashboard"]
+}
+
+// ========================================
+// DATA FLOWS — Simplified
+// ========================================
+
+// Edge to Ingestion
+Vehicle Fleet > IoT Core: "MQTT Publish\n(Telemetry + Events)"
+
+// Ingestion to Processing (3 lanes)
+IoT Core > SQS FIFO: "🚨 Emergency Events"
+IoT Core > Kinesis: "📊 Telemetry Data"
+IoT Core > Firehose: "📈 Analytics Feed"
+
+// Emergency Lane Flow
+SQS FIFO > Lambda Emergency: "Immediate Trigger"
+Lambda Emergency > Step Functions Emerg: "Start Workflow"
+Step Functions Emerg > DynamoDB: "Record Incident"
+Step Functions Emerg > External: "Notify Authorities + Owner"
+
+// Normal Lane Flow
+Kinesis > Lambda Processor: "Batch Processing\n(100 records/60s)"
+Lambda Processor > DynamoDB: "Store Current State"
+Lambda Processor > Timestream: "Store Metrics"
+Lambda Processor > SQS FIFO: "Escalate if Anomaly"
+
+// Analytics Lane Flow
+Firehose > S3 DataLake: "Parquet Files\n(5 min batches)"
+S3 DataLake > Analytics Tools: "Schema + Queries"
+
+// Real-Time Sync
+DynamoDB > Stream Handler: "DynamoDB Streams"
+Stream Handler > Cache: "Update Cache"
+Stream Handler > GraphQL: "GraphQL Mutation"
+Stream Handler > WebSocket: "Push to Clients"
+
+// Frontend Layer
+Web Users > CloudFront: "HTTPS Requests"
+CloudFront > S3 Static: "Serve Static Assets\n(HTML, JS, CSS, Images)"
+CloudFront > API Gateway: "API Requests\n(/api/*)"
+
+// Application Layer
+Web Users > API Gateway: "Direct API Calls"
+Mobile > API Gateway: "HTTPS Requests"
+Admin > API Gateway: "HTTPS Requests"
+API Gateway > Auth: "JWT Validation"
+API Gateway > ALB: "Forward to Services"
+ALB > Sales: "Path: /api/sales/*"
+ALB > Monitoring: "Path: /api/monitoring/*"
+ALB > Statistics: "Path: /api/statistics/*"
+ALB > Payments: "Path: /api/payments/*"
+ALB > Alerts: "Path: /api/alerts/*"
+
+// Business Logic & Workflows
+Sales > Workflows: "Contract Approval Flow"
+Payments > Workflows: "Payment Reminders"
+Workflows > Sales: "Workflow Completion"
+
+// External API Integrations
+Sales > GovAPI: "Validate Company ID"
+Payments > Stripe: "Process Payments"
+Alerts > Twilio: "Send SMS Alerts"
+Alerts > SES: "Send Email Notifications"
+Workflows > GovAPI: "Identity Validation"
+Workflows > Stripe: "Initial Payment"
+
+// Storage Connections
+Lambda Processor > DynamoDB: "Write Telemetry"
+Lambda Processor > Timestream: "Write Metrics"
+
+Sales > Aurora: "Store Contracts"
+Sales > DynamoDB: "Log Events"
+Payments > Aurora: "Manage Invoices"
+Monitoring > DynamoDB: "Query Telemetry"
+Monitoring > CacheLayer: "Get Cached Vehicles"
+Monitoring > ObjectStorage: "Access Videos"
+Statistics > Timestream: "Query Metrics"
+Statistics > CacheLayer: "Cache Reports"
+Alerts > DynamoDB: "Alert Config"
+
+// Real-Time to Clients
+GraphQL > Web Users: "GraphQL Subscriptions"
+GraphQL > Mobile: "GraphQL Subscriptions"
+WebSocket > Web Users: "WebSocket Push"
+WebSocket > Mobile: "WebSocket Push"
+WebSocket > Admin: "Real-Time Updates"
+
+// Cross-Cutting
+Microservices > Security: "Encryption + Auth"
+Microservices > Monitoring: "Logs + Traces"
+Lambda Processor > Security: "KMS Encryption"
+Lambda Processor > Monitoring: "CloudWatch Metrics"
+
+// ========================================
+// KEY ANNOTATIONS
+// ========================================
+
+CloudFront [note: "Global CDN with 300+ edge locations\nHTTPS only, WAF integration\nOrigin: S3 + API Gateway"]
+S3 Static [note: "Website hosting enabled\nVersioning + Lifecycle policies\nReact SPA build artifacts"]
+SQS FIFO [note: "FIFO ensures exactly-once\nSLA: <2s end-to-end"]
+Kinesis [note: "Auto-scale: 10-50 shards\n5,000-50,000 msg/sec"]
+DynamoDB [note: "On-Demand billing\nTTL: 90 days, PITR enabled"]
+Aurora [note: "Serverless v2: 0.5-16 ACU\nMulti-AZ auto-failover"]
+Cache [note: "Sub-ms latency\nMulti-AZ replication"]
+Step Functions Emerg [note: "Parallel branches:\n• Authorities\n• Owner\n• Incident record"]
+
+// ========================================
+// METRICS
+// ========================================
+
+CloudFront [metric: "Global latency <50ms"]
+S3 Static [metric: "99.99% availability"]
+IoT Core [metric: "500K concurrent connections"]
+Kinesis [metric: "5K-50K msg/sec"]
+Step Functions Emerg [metric: "<2s p99 latency"]
+ALB [metric: "99.99% availability"]
+Aurora [metric: "Up to 16K connections"]
+S3 DataLake [metric: "11 9's durability"]
+Admin > CloudFront: HTTPS Request [color: Black]

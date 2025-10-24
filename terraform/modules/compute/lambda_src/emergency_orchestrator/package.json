@@ -1,0 +1,10 @@
+{
+  "name": "emergency-orchestrator",
+  "version": "1.0.0",
+  "description": "Orchestrate emergency response workflows",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1400.0"
+  }
+}
+

@@ -1,0 +1,10 @@
+{
+  "name": "websocket-handler",
+  "version": "1.0.0",
+  "description": "Handle WebSocket connections for real-time updates",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1400.0"
+  }
+}
+

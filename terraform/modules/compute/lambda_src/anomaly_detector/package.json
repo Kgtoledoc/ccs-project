@@ -1,0 +1,10 @@
+{
+  "name": "anomaly-detector",
+  "version": "1.0.0",
+  "description": "Detect anomalies in vehicle telemetry",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1400.0"
+  }
+}
+

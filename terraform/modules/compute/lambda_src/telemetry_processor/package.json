@@ -1,0 +1,10 @@
+{
+  "name": "telemetry-processor",
+  "version": "1.0.0",
+  "description": "Process vehicle telemetry data",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1400.0"
+  }
+}
+
